@@ -3,435 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Traffic Master Pro - Mobile App</title>
+    <title>Traffic Master Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* --- THEME VARIABLES --- */
+        /* --- 1. การตั้งค่าสีและธีม --- */
         :root {
-            --primary: #2563eb; --primary-dark: #1d4ed8; --secondary: #eff6ff;
-            --bg-main: #f3f4f6; --bg-card: #ffffff; --text-main: #1f2937;
-            --text-muted: #6b7280; --border-color: #e5e7eb; --sidebar-bg: #ffffff;
-            --accent: #f59e0b; --danger: #dc2626; --success: #10b981;
-            --shadow: rgba(0,0,0,0.05); --sidebar-width: 280px;
-        }
-        body.dark-mode {
-            --primary: #3b82f6; --secondary: #1e293b; --bg-main: #0f172a;
-            --bg-card: #1e293b; --text-main: #f1f5f9; --text-muted: #94a3b8;
-            --border-color: #334155; --sidebar-bg: #111827; --shadow: rgba(0,0,0,0.3);
+            --primary: #2563eb;
+            --secondary: #eff6ff;
+            --bg: #f3f4f6;
+            --text: #1f2937;
+            --sidebar-width: 260px;
         }
 
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Sarabun', sans-serif; margin: 0; display: flex;
-            height: 100vh; overflow: hidden; background: var(--bg-main);
-            color: var(--text-main); line-height: 1.6; transition: 0.3s;
+            font-family: 'Sarabun', sans-serif;
+            margin: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden; /* ห้ามเลื่อนทั้งหน้า ให้เลื่อนเฉพาะเนื้อหา */
         }
 
-        /* --- SIDEBAR (PC Style) --- */
+        /* --- 2. ส่วนเมนู (Sidebar) --- */
         .sidebar {
-            width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column; padding: 25px; flex-shrink: 0;
-            position: relative; z-index: 50; overflow-y: auto;
-            transition: transform 0.3s ease; /* เพิ่ม Effect เลื่อน */
+            width: var(--sidebar-width);
+            background: white;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e5e7eb;
+            transition: 0.3s; /* เอฟเฟกต์เลื่อนสมูท */
+            z-index: 1000;
         }
-        .logo { font-size: 1.5rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         
-        /* Profile & Nav */
-        .profile-section { background: var(--secondary); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--border-color); }
-        .profile-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .profile-avatar { width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
-        .profile-info h4 { margin: 0; font-size: 1rem; color: var(--text-main); }
-        .profile-rank { font-size: 0.8rem; color: var(--text-muted); }
-        .xp-container { margin-top: 10px; }
-        .xp-bar-bg { height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden; }
-        .xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); width: 0%; transition: width 0.5s; }
-        .xp-text { font-size: 0.75rem; color: var(--text-muted); text-align: right; margin-top: 4px; }
-        .achievements-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 10px; }
-        .ach-badge { aspect-ratio: 1; background: var(--border-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-muted); opacity: 0.3; }
-        .ach-badge.unlocked { background: linear-gradient(135deg, #fbbf24, #d97706); color: white; opacity: 1; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
-        .nav-btn { width: 100%; text-align: left; padding: 12px 15px; margin-bottom: 5px; border: none; background: transparent; border-radius: 10px; cursor: pointer; color: var(--text-muted); font-family: 'Sarabun', sans-serif; font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .nav-btn.active { background: var(--secondary); color: var(--primary); border-left: 4px solid var(--primary); }
-        .theme-toggle { display: flex; align-items: center; justify-content: space-between; background: var(--secondary); padding: 10px 15px; border-radius: 12px; margin-top: 20px; cursor: pointer; border: 1px solid var(--border-color); color: var(--text-main); }
-
-        /* --- MAIN CONTENT --- */
-        .main-content { flex-grow: 1; padding: 40px 60px; overflow-y: auto; scroll-behavior: smooth; position: relative; z-index: 5; }
-        .page-section { display: none; animation: slideUp 0.5s ease; max-width: 1000px; margin: 0 auto; }
-        .page-section.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Components */
-        .hero-card { background: var(--bg-card); border-radius: 25px; padding: 40px; box-shadow: 0 10px 40px var(--shadow); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; position: relative; overflow: hidden; }
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .feature-card { background: var(--bg-card); padding: 20px; border-radius: 15px; border: 1px solid var(--border-color); text-align: center; }
-        .fc-icon { width: 60px; height: 60px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 1.5rem; color: var(--primary); }
-        .tip-system { background: linear-gradient(135deg, var(--success), #059669); color: white; border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 15px 30px rgba(16, 185, 129, 0.2); }
-        .refresh-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; }
-        .creator-box { background: var(--primary); color: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(37, 99, 235, 0.3); }
-        .lesson-card { background: var(--bg-card); padding: 30px; border-radius: 12px; box-shadow: 0 2px 5px var(--shadow); margin-bottom: 30px; border-left: 4px solid var(--info); border: 1px solid var(--border-color); }
-        .checklist-item { display: flex; align-items: center; gap: 15px; background: var(--secondary); padding: 15px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; color: var(--text-main); }
-        .checklist-item.checked { background: #dcfce7; } body.dark-mode .checklist-item.checked { background: #064e3b; }
-        .cb-box { width: 24px; height: 24px; border: 2px solid var(--text-muted); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: transparent; }
-        .checklist-item.checked .cb-box { background: var(--success); border-color: var(--success); color: white; }
-        
-        /* Game & Signs */
-        .game-area { background: var(--bg-card); border-radius: 25px; padding: 30px; text-align: center; border: 1px solid var(--border-color); }
-        .timer-bar { background: var(--border-color); height: 10px; border-radius: 5px; overflow: hidden; margin: 20px 0; }
-        .timer-fill { background: var(--danger); height: 100%; width: 100%; transition: width 1s linear; }
-        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 25px; } 
-        @media(min-width: 768px) { .options-grid { grid-template-columns: 1fr 1fr; } }
-        .opt-btn { padding: 15px; border: 2px solid var(--border-color); background: var(--bg-card); color: var(--text-main); border-radius: 12px; font-size: 1rem; cursor: pointer; }
-        .sign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; } 
-        .sign-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
-        .sign-icon { background: var(--secondary); padding: 10px; border-radius: 10px; display:flex; align-items:center; justify-content:center; width: 60px; height:60px; }
-        .sign-icon img { width: 100%; height: 100%; object-fit: contain; }
-        .badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; color:white; }
-        .bg-red { background: var(--danger); } .bg-yellow { background: var(--accent); } .bg-blue { background: var(--primary); }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-muted); cursor: pointer; white-space: nowrap; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-        /* UI */
-        .welcome-btn { margin-top: 30px; padding: 15px 40px; font-size: 1.1rem; background: linear-gradient(90deg, var(--primary), var(--accent)); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: 800; box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4); }
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 10000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} } @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-        #welcome-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: white; text-align: center; }
-
-        /* --- [CORRECTED] MOBILE RESPONSIVE CSS (ย้ายมาไว้ล่างสุด) --- */
-        .mobile-toggle {
-            display: none; position: fixed; top: 15px; left: 15px; z-index: 100;
-            background: var(--primary); color: white; border: none;
-            width: 45px; height: 45px; border-radius: 12px; font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .menu-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(3px);
+
+        .menu-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #6b7280;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 10px;
         }
+        .menu-btn:hover { background: #f3f4f6; color: var(--primary); }
+        .menu-btn.active { background: var(--secondary); color: var(--primary); }
+
+        /* --- 3. ส่วนเนื้อหาหลัก (Main Content) --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto; /* เลื่อนเนื้อหาได้ */
+            position: relative;
+        }
+
+        /* การ์ดและกล่องข้อความ */
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .hero-card {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- 4. ระบบมือถือ (Mobile Responsive) --- */
+        .mobile-header { display: none; } /* ซ่อนหัวเว็บมือถือใน PC */
+        .overlay { display: none; }
 
         @media (max-width: 768px) {
+            /* ปรับเมนูซ้ายให้ซ่อน */
             .sidebar {
-                position: fixed; left: -100%; top: 0; height: 100%; width: 80%; max-width: 300px;
-                box-shadow: 5px 0 25px rgba(0,0,0,0.2);
-                /* ใช้ !important เพื่อบังคับให้เชื่อโค้ดนี้ */
-                z-index: 999 !important; 
+                position: fixed;
+                left: -100%; /* ซ่อนไปทางซ้าย */
+                top: 0;
+                width: 280px;
+                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
             }
-            .sidebar.active { left: 0 !important; } 
-            
-            .main-content { width: 100%; padding: 80px 20px 40px 20px; } 
-            
-            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
-            .menu-overlay.active { display: block; }
-            
-            .hero-card { flex-direction: column; text-align: center; padding: 25px; }
-            .hero-card div:last-child { margin-top: 20px; font-size: 4rem; }
-            .typing-text { font-size: 1.5rem; white-space: normal; animation: none; border: none; }
-            h1 { font-size: 1.8rem; }
-            .bg-animation { display: none; }
+            .sidebar.active { left: 0; } /* เลื่อนออกมาเมื่อมีคลาส active */
+
+            /* สร้างหัวเว็บสำหรับมือถือ */
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 15px 20px;
+                background: white;
+                position: fixed;
+                top: 0; left: 0; right: 0;
+                z-index: 900;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+            .hamburger {
+                font-size: 1.5rem;
+                background: none; border: none; cursor: pointer; color: var(--text);
+            }
+
+            /* ปรับเนื้อหาให้หลบหัวเว็บ */
+            .main-content {
+                padding: 80px 20px 20px 20px; /* เว้นด้านบน 80px */
+            }
+
+            /* ฉากหลังมืดเวลาเปิดเมนู */
+            .overlay {
+                display: none;
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 950;
+            }
+            .overlay.active { display: block; }
         }
+
+        /* --- 5. คลาสอื่นๆ --- */
+        .page { display: none; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
+        .sign-item { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px; text-align: center; }
+        .sign-img { font-size: 3rem; margin-bottom: 10px; display: block; }
+        
+        .quiz-option {
+            display: block; width: 100%; padding: 15px; margin-bottom: 10px;
+            border: 2px solid #e5e7eb; background: white; border-radius: 10px;
+            font-size: 1rem; cursor: pointer; text-align: left;
+        }
+        .quiz-option:hover { border-color: var(--primary); background: var(--secondary); }
+
+        /* Image Styling */
+        .real-img { width: 100%; max-width: 120px; height: auto; display: block; margin: 0 auto 10px; }
     </style>
 </head>
 <body>
 
-    <audio id="welcome-sound" src="download.wav" preload="auto"></audio>
-    <audio id="sfx-click" src="click.mp3" preload="auto"></audio>
-    <audio id="sfx-correct" src="correct.mp3" preload="auto"></audio>
-    <audio id="sfx-wrong" src="wrong.mp3" preload="auto"></audio>
-
-    <div id="welcome-overlay">
-        <div style="font-size: 5rem; margin-bottom: 15px;">🚦</div>
-        <h1 style="color:white;">Traffic Master Pro</h1>
-        <p style="color: #cbd5e1; margin-bottom: 20px;">เรียนรู้กฎจราจรแบบสนุกๆ</p>
-        <button class="welcome-btn" onclick="enterSite()">🚀 เริ่มต้นใช้งาน</button>
+    <div class="mobile-header">
+        <div style="font-weight: 800; color: var(--primary);">Traffic Master</div>
+        <button class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </div>
 
-    <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-    <div class="menu-overlay" onclick="toggleSidebar()"></div>
-
-    <div id="toast"><i class="fas fa-trophy" style="color: #fbbf24;"></i> <span id="toast-msg"></span></div>
-    
-    <div class="bg-animation">
-        <div class="floating-item item-1">🛑</div> <div class="floating-item item-2">🚦</div>
-        <div class="floating-item item-3">🚗</div> <div class="floating-item item-4">🚧</div>
-    </div>
+    <div class="overlay" onclick="toggleMenu()"></div>
 
     <aside class="sidebar">
         <div class="logo"><i class="fas fa-traffic-light"></i> Traffic Master</div>
         
-        <div class="profile-section">
-            <div class="profile-header">
-                <div class="profile-avatar"><i class="fas fa-user-astronaut"></i></div>
-                <div class="profile-info">
-                    <h4 id="user-level-name">Rookie</h4>
-                    <div class="profile-rank" id="user-level">Level 1</div>
-                </div>
-            </div>
-            <div class="xp-container">
-                <div class="xp-bar-bg"><div id="xp-fill" class="xp-bar-fill" style="width: 0%"></div></div>
-                <div class="xp-text"><span id="xp-current">0</span> / 100 XP</div>
-            </div>
-            <div class="achievements-grid">
-                <div class="ach-badge" id="ach-1" title="นักอ่านหน้าใหม่"><i class="fas fa-book-open"></i></div>
-                <div class="ach-badge" id="ach-2" title="นักขับมือใหม่"><i class="fas fa-car"></i></div>
-                <div class="ach-badge" id="ach-3" title="เทพเจ้าจราจร"><i class="fas fa-crown"></i></div>
-            </div>
+        <div style="margin-bottom: 20px; padding: 15px; background: var(--secondary); border-radius: 10px;">
+            <div style="font-weight: bold;">ผู้เรียน: Rookie</div>
+            <div style="font-size: 0.9rem; color: #666;">Level 1 • 0 XP</div>
         </div>
 
-        <button class="nav-btn active" onclick="switchPage('home')"><span>🏠</span> หน้าแรก</button>
-        <div class="menu-label">บทเรียน</div>
-        <button class="nav-btn" onclick="switchPage('lesson-1')"><span>📖</span> 1. ความรู้ทั่วไป</button>
-        <button class="nav-btn" onclick="switchPage('lesson-2')"><span>🛑</span> 2. คลังป้ายจราจร</button>
-        <button class="nav-btn" onclick="switchPage('lesson-3')"><span>📝</span> 3. เตรียมสอบ</button>
-        <button class="nav-btn" onclick="switchPage('game')"><span>🎮</span> 4. แบบทดสอบ</button>
-
-        <div class="theme-toggle" onclick="toggleTheme()">
-            <span><i class="fas fa-adjust"></i> ธีมมืด/สว่าง</span>
-            <i id="theme-icon" class="fas fa-moon"></i>
-        </div>
+        <nav>
+            <button class="menu-btn active" onclick="go('home')"><i class="fas fa-home"></i> หน้าแรก</button>
+            <button class="menu-btn" onclick="go('lesson1')"><i class="fas fa-book"></i> ความรู้ทั่วไป</button>
+            <button class="menu-btn" onclick="go('lesson2')"><i class="fas fa-stop-circle"></i> คลังป้ายจราจร</button>
+            <button class="menu-btn" onclick="go('quiz')"><i class="fas fa-gamepad"></i> แบบทดสอบ</button>
+        </nav>
     </aside>
 
     <main class="main-content">
-        <div id="home" class="page-section active">
-            <div class="hero-card">
+        
+        <div id="home" class="page active">
+            <div class="card hero-card">
                 <div>
-                    <div style="font-size: 0.9rem; color: var(--primary); font-weight: 600;">MONTHACHAI DRIVING SCHOOL</div>
-                    <div class="typing-text" style="font-size: 1.5rem; font-weight:800; margin:10px 0;">Traffic Learning Hub</div>
-                    <p>เรียนรู้กฎจราจรและเตรียมสอบใบขับขี่ได้ทุกที่</p>
+                    <h1>ยินดีต้อนรับ!</h1>
+                    <p>โรงเรียนสอนขับรถมนทชัย (Monthachai Driving School)</p>
+                    <button style="margin-top: 15px; padding: 10px 25px; border: none; background: white; color: var(--primary); border-radius: 20px; font-weight: bold; cursor: pointer;" onclick="go('quiz')">เริ่มทำแบบทดสอบ</button>
                 </div>
-                <div style="font-size: 4rem;">🏁</div>
-            </div>
-
-            <h3 style="margin-bottom: 15px;">ทำไมต้อง Traffic Master?</h3>
-            <div class="feature-grid">
-                <div class="feature-card"><div class="fc-icon"><i class="fas fa-gamepad"></i></div><h4>เรียนสนุกมีเลเวล</h4></div>
-                <div class="feature-card"><div class="fc-icon"><i class="fas fa-mobile-alt"></i></div><h4>รองรับมือถือ</h4></div>
-                <div class="feature-card"><div class="fc-icon"><i class="fas fa-check-circle"></i></div><h4>ข้อมูลชัวร์</h4></div>
-            </div>
-
-            <div class="tip-system">
-                <div style="font-weight: 800; margin-bottom:10px;"><i class="fas fa-lightbulb"></i> เกร็ดความรู้ประจำวัน</div>
-                <div id="tip-content" style="font-size: 1.1rem; margin-bottom:15px;">กำลังโหลด...</div>
-                <button class="refresh-btn" onclick="manualRefreshTip()"><i class="fas fa-sync-alt"></i> เปลี่ยนเรื่อง</button>
+                <div style="font-size: 4rem;">🚗</div>
             </div>
             
-            <div class="creator-box" style="margin-top:30px;">
-                <p>DEVELOPED BY</p>
-                <h2>มนภวัต ธัญญประดิษฐ์</h2>
+            <div class="card">
+                <h3>💡 เกร็ดความรู้วันนี้</h3>
+                <p id="daily-tip">"ทางม้าลาย: ต้องหยุดรถให้คนข้ามเสมอ หากฝ่าฝืนปรับไม่เกิน 4,000 บาท"</p>
             </div>
         </div>
 
-        <div id="lesson-1" class="page-section">
-            <h1>📖 1. ความรู้ทั่วไป</h1>
-            <div class="lesson-card">
-                <h2>📜 นิยามทางกฎหมาย</h2>
-                <div style="background: var(--secondary); padding: 15px; border-left: 4px solid var(--primary); border-radius: 5px;">
-                    "<strong>เครื่องหมายจราจร</strong> คือสัญลักษณ์ที่ติดตั้งไว้เพื่อให้ผู้ขับขี่ปฏิบัติตาม เพื่อความปลอดภัยและระเบียบวินัย"
-                </div>
+        <div id="lesson1" class="page">
+            <h2>📖 ความรู้ทั่วไป</h2>
+            <div class="card">
+                <h3>นิยามและความสำคัญ</h3>
+                <p>"เครื่องหมายจราจร" คือสัญลักษณ์ที่ติดตั้งไว้เพื่อให้ผู้ขับขี่ปฏิบัติตาม เพื่อความปลอดภัยและระเบียบวินัยบนท้องถนน</p>
             </div>
-            <div class="lesson-card">
-                 <h2>🎨 ความหมายของสี</h2>
-                 <ul style="padding-left:20px;">
-                     <li><strong>สีแดง:</strong> บังคับ / ห้าม</li>
-                     <li><strong>สีเหลือง:</strong> เตือนให้ระวัง</li>
-                     <li><strong>สีน้ำเงิน/เขียว:</strong> แนะนำข้อมูล</li>
-                 </ul>
-            </div>
-            <button class="welcome-btn" style="width:100%;" onclick="gainXP(50); this.disabled=true; playSFX('sfx-correct');">✅ อ่านจบรับ 50 XP</button>
-        </div>
-
-        <div id="lesson-2" class="page-section">
-            <h1>🛑 2. คลังป้ายจราจร</h1>
-            <div class="tabs">
-                <button class="tab-btn active" onclick="filterSigns('all')">ทั้งหมด</button>
-                <button class="tab-btn" onclick="filterSigns('mandatory')">บังคับ</button>
-                <button class="tab-btn" onclick="filterSigns('warning')">เตือน</button>
-                <button class="tab-btn" onclick="filterSigns('info')">แนะนำ</button>
-            </div>
-            <div id="sign-container" class="sign-grid"></div>
-        </div>
-
-        <div id="lesson-3" class="page-section">
-            <h1>📝 3. เตรียมสอบ</h1>
-            <div class="lesson-card">
-                <h2>Checklist สิ่งที่ต้องเตรียม</h2>
-                <div class="checklist-item" onclick="toggleCheck(this)"><div class="cb-box"><i class="fas fa-check"></i></div><div>บัตรประชาชนตัวจริง</div></div>
-                <div class="checklist-item" onclick="toggleCheck(this)"><div class="cb-box"><i class="fas fa-check"></i></div><div>ใบรับรองแพทย์</div></div>
+            <div class="card">
+                <h3>ความหมายของสีป้าย</h3>
+                <ul style="line-height: 1.8;">
+                    <li>🔴 <strong>สีแดง:</strong> บังคับ / ห้าม (ต้องทำตามทันที)</li>
+                    <li>🟡 <strong>สีเหลือง:</strong> เตือน (ให้ระวังอันตรายข้างหน้า)</li>
+                    <li>🔵 <strong>สีน้ำเงิน/เขียว:</strong> แนะนำ (บอกทาง สถานที่)</li>
+                </ul>
             </div>
         </div>
 
-        <div id="game" class="page-section">
-            <h1>🎮 4. แบบทดสอบ</h1>
-            <div class="game-area">
-                <div id="g-start">
-                    <div style="font-size: 5rem; margin-bottom: 20px;">🏆</div>
-                    <h2>พร้อมไหม?</h2>
-                    <p>ตอบถูกรับข้อละ 20 XP</p>
-                    <button class="welcome-btn" onclick="startGame()">เริ่มทำข้อสอบ</button>
+        <div id="lesson2" class="page">
+            <h2>🛑 คลังป้ายจราจร</h2>
+            <div class="card">
+                <p>รวมป้ายจราจรที่ควรรู้ก่อนสอบใบขับขี่</p>
+            </div>
+            <div id="sign-gallery" class="sign-grid">
                 </div>
-                <div id="g-play" style="display:none;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <span id="q-counter">ข้อที่ 1/5</span> <span id="timer-text">30s</span>
-                    </div>
-                    <div class="timer-bar"><div id="timer-fill" class="timer-fill"></div></div>
-                    <div id="q-icon" style="margin: 20px 0; min-height:100px; display:flex; align-items:center; justify-content:center;"></div>
-                    <h3 id="q-question" style="margin-bottom:20px;">คำถาม?</h3>
-                    <div id="q-options" class="options-grid"></div>
+        </div>
+
+        <div id="quiz" class="page">
+            <h2>🎮 แบบทดสอบ</h2>
+            <div class="card" id="quiz-box">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div id="q-image" style="margin-bottom: 20px;"></div>
+                    <h3 id="q-text">คำถามจะขึ้นตรงนี้...</h3>
                 </div>
-                <div id="g-result" style="display:none;">
-                    <h2>คะแนนของคุณ</h2>
-                    <h1 style="color:var(--primary); font-size:4rem;" id="final-score">0/5</h1>
-                    <p id="xp-gained-text" style="color:var(--success); font-weight:bold;">+0 XP</p>
-                    <button class="welcome-btn" onclick="startGame()" style="background:transparent; border:2px solid var(--primary); color:var(--primary); box-shadow:none; margin-top:20px;">สอบใหม่</button>
-                </div>
+                <div id="q-options"></div>
             </div>
         </div>
+
     </main>
 
     <script>
-        // --- MOBILE SYSTEM ---
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('active');
-            document.querySelector('.menu-overlay').classList.toggle('active');
-        }
-
-        // --- CORE SYSTEM ---
-        function playSFX(id) { document.getElementById(id).currentTime=0; document.getElementById(id).play().catch(()=>{}); }
-        function enterSite() { 
-            document.getElementById('welcome-sound').play().catch(()=>{});
-            document.getElementById('welcome-overlay').style.opacity='0';
-            setTimeout(()=>{document.getElementById('welcome-overlay').style.display='none';},500);
-            unlockAchievement('1','นักอ่านหน้าใหม่'); randomTip();
-        }
-        function switchPage(pageId) {
-            playSFX('sfx-click');
-            document.querySelectorAll('.page-section').forEach(el=>el.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            // Auto close menu on mobile
-            document.querySelector('.sidebar').classList.remove('active');
-            document.querySelector('.menu-overlay').classList.remove('active');
-            window.scrollTo(0,0);
-        }
-
-        // --- THEME & XP ---
-        let isDarkMode = localStorage.getItem('darkMode')==='true';
-        if(isDarkMode) { document.body.classList.add('dark-mode'); document.getElementById('theme-icon').className='fas fa-sun'; }
-        function toggleTheme() {
-            isDarkMode=!isDarkMode; document.body.classList.toggle('dark-mode',isDarkMode);
-            document.getElementById('theme-icon').className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
-            localStorage.setItem('darkMode',isDarkMode); playSFX('sfx-click');
-        }
-
-        let userXP = parseInt(localStorage.getItem('userXP'))||0;
-        let achievements = JSON.parse(localStorage.getItem('achievements'))||[];
-        function updateProfileUI() {
-            let lvl = Math.floor(userXP/100)+1;
-            document.getElementById('user-level').innerText = `Level ${lvl}`;
-            document.getElementById('xp-current').innerText = userXP%100;
-            document.getElementById('xp-fill').style.width = `${userXP%100}%`;
-            localStorage.setItem('userXP',userXP);
-            if(achievements.includes('1')) document.getElementById('ach-1').classList.add('unlocked');
-            if(achievements.includes('2')) document.getElementById('ach-2').classList.add('unlocked');
-            if(achievements.includes('3')) document.getElementById('ach-3').classList.add('unlocked');
-        }
-        function gainXP(amt) { userXP+=amt; updateProfileUI(); }
-        function unlockAchievement(id,txt) {
-            if(!achievements.includes(id)) {
-                achievements.push(id); localStorage.setItem('achievements',JSON.stringify(achievements));
-                updateProfileUI(); showToast(`🏆 ปลดล็อค: ${txt}`); confetti({particleCount:100,spread:70,origin:{y:0.6}});
-            }
-        }
-        function showToast(txt) {
-            const t=document.getElementById("toast"); document.getElementById("toast-msg").innerText=txt;
-            t.className="show"; setTimeout(()=>{t.className=t.className.replace("show","");},3000);
-        }
-        function toggleCheck(el){ el.classList.toggle('checked'); playSFX('sfx-click'); }
-
-        // --- DATA ---
-        const trafficData = [
-            { type: 'mandatory', icon: '<img src="หยุดด.png">', name: 'ป้ายหยุด', desc: 'หยุดรถให้สนิท' },
-            { type: 'mandatory', icon: '🔻', name: 'ให้ทาง', desc: 'ให้รถทางขวางไปก่อน' },
-            { type: 'mandatory', icon: '⛔', name: 'ห้ามเข้า', desc: 'ห้ามผ่าน' },
-            { type: 'warning', icon: '↪️', name: 'โค้งซ้าย', desc: 'ระวังโค้งซ้าย' },
-            { type: 'info', icon: '🅿️', name: 'ที่จอดรถ', desc: 'จอดได้' }
+        // --- 1. ข้อมูลป้ายจราจร (แก้ไขตรงนี้เพื่อเปลี่ยนรูป) ---
+        const signs = [
+            // วิธีใส่รูป: เปลี่ยน icon: '🛑' เป็น img: 'ชื่อไฟล์.jpg'
+            { name: "ป้ายหยุด", desc: "ต้องหยุดรถให้สนิท", icon: "🛑", type: "บังคับ" },
+            { name: "ห้ามเข้า", desc: "ห้ามรถทุกชนิดเข้า", icon: "⛔", type: "บังคับ" },
+            { name: "ให้ทาง", desc: "ระวังรถทางขวา", icon: "🔻", type: "บังคับ" },
+            { name: "ทางโค้งซ้าย", desc: "ชะลอความเร็ว", icon: "↩️", type: "เตือน" },
+            { name: "ระวังรถไฟ", desc: "ทางรถไฟผ่าน", icon: "🚂", type: "เตือน" },
+            { name: "จุดกลับรถ", desc: "กลับรถได้", icon: "↩️", type: "แนะนำ" },
+            
+            // ตัวอย่างถ้าจะใส่รูปจริง (ลบ // ข้างหน้าออกเพื่อใช้)
+            // { name: "ป้ายหยุด (รูปจริง)", desc: "หยุดรถ", img: "S_6234114.jpg", type: "บังคับ" }
         ];
-        function renderSigns(filter) {
-            const c=document.getElementById('sign-container'); c.innerHTML='';
-            const d=filter==='all'?trafficData:trafficData.filter(i=>i.type===filter);
-            d.forEach(i=>{
-                let cls=i.type==='mandatory'?'bg-red':(i.type==='warning'?'bg-yellow':'bg-blue');
-                c.innerHTML+=`<div class="sign-card"><div class="sign-icon">${i.icon}</div><div><span class="badge ${cls}">${i.type}</span><div style="font-weight:bold;font-size:0.9rem;">${i.name}</div></div></div>`;
-            });
-        }
-        function filterSigns(t) { renderSigns(t); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); }
 
-        // --- [ใส่ข้อสอบของคุณตรงนี้ได้เลยครับ] ---
-        const myQuiz = [
+        // --- 2. ข้อมูลข้อสอบ ---
+        const questions = [
             {
-                question: "เมื่อพบเครื่องหมายนี้ ผู้ขับขี่ต้องปฏิบัติอย่างไร?",
-                image: '<img src="S_6234114.jpg" style="width:120px;">', // ใส่ชื่อไฟล์รูปของคุณ
-                options: [
-                    "รถมีคนนั่ง 2 คน เข้าไปในช่องเดินรถนี้ได้",
-                    "รถมีคนนั่งไม่น้อยกว่า 3 คน สามารถใช้ช่องเดินรถนี้ได้", // คำตอบที่ถูก
-                    "รถมีคนนั่ง 1 คน เข้าไปในช่องเดินรถนี้ได้",
-                    "ห้ามรถมีคนเกิน 3 คน เข้าไปในช่องเดินรถนี้"
-                ],
-                correctAnswer: "รถมีคนนั่งไม่น้อยกว่า 3 คน สามารถใช้ช่องเดินรถนี้ได้"
+                q: "เมื่อเจอเครื่องหมายนี้ ต้องทำอย่างไร?",
+                // ถ้ามีรูปจริง ให้แก้เป็น img: '<img src="ชื่อไฟล์.jpg" class="real-img">'
+                img: '<div style="font-size: 5rem;">🛑</div>', 
+                options: ["หยุดรถ", "เร่งความเร็ว", "บีบแตร", "เลี้ยวซ้าย"],
+                ans: "หยุดรถ"
             },
-            { q:"ไฟเหลืองหมายถึง?", img:'<div style="font-size:4rem;">🟡</div>', o:["เร่งความเร็ว","เตรียมหยุด","จอดรถ","เลี้ยวได้"], a:"เตรียมหยุด" }
+            {
+                q: "ไฟจราจรสีเหลือง หมายถึงอะไร?",
+                img: '<div style="font-size: 5rem;">🟡</div>',
+                options: ["เร่งเครื่องผ่านไปเร็วๆ", "เตรียมหยุดรถ", "จอดรถทันที", "เลี้ยวได้เลย"],
+                ans: "เตรียมหยุดรถ"
+            }
         ];
-        
-        let score=0, qIndex=0, timer, timeLeft=30;
-        function startGame() {
-            playSFX('sfx-click'); score=0; qIndex=0;
-            document.getElementById('g-start').style.display='none'; document.getElementById('g-result').style.display='none';
-            document.getElementById('g-play').style.display='block';
-            nextQuestion();
-        }
-        function nextQuestion() {
-            if(qIndex>=myQuiz.length) { endGame(); return; }
-            timeLeft=30; clearInterval(timer);
-            timer=setInterval(()=>{
-                timeLeft--; document.getElementById('timer-text').innerText=timeLeft+'s';
-                document.getElementById('timer-fill').style.width=(timeLeft/30*100)+'%';
-                if(timeLeft<=0) endGame();
-            },1000);
-            
-            let item = myQuiz[qIndex];
-            document.getElementById('q-counter').innerText=`ข้อที่ ${qIndex+1}`;
-            document.getElementById('q-question').innerText=item.question || item.q;
-            document.getElementById('q-icon').innerHTML=item.image || item.img || '';
-            const c=document.getElementById('q-options'); c.innerHTML='';
-            
-            // สุ่มช้อยส์
-            let opts=[...(item.options || item.o)].sort(()=>0.5-Math.random());
-            let ans = item.correctAnswer || item.a;
 
-            opts.forEach(opt=>{
-                let b=document.createElement('button'); b.className='opt-btn'; b.innerText=opt;
-                b.onclick=()=>{ 
-                    if(opt===ans){ score++; playSFX('sfx-correct'); } else playSFX('sfx-wrong');
-                    qIndex++; nextQuestion();
-                };
-                c.appendChild(b);
+        // --- 3. ระบบทำงาน (Logic) ---
+        
+        // ฟังก์ชันสลับหน้า
+        function go(pageId) {
+            // ซ่อนทุกหน้า
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(el => el.classList.remove('active'));
+            
+            // โชว์หน้าเป้าหมาย
+            document.getElementById(pageId).classList.add('active');
+            
+            // ปิดเมนูมือถือ (ถ้าเปิดอยู่)
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.overlay').classList.remove('active');
+        }
+
+        // ฟังก์ชันเปิด-ปิดเมนูมือถือ
+        function toggleMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        // ฟังก์ชันสร้างคลังป้าย (Render Gallery)
+        function renderGallery() {
+            const container = document.getElementById('sign-gallery');
+            container.innerHTML = '';
+            signs.forEach(sign => {
+                // เช็คว่าจะโชว์รูปจริง หรือ ไอคอน
+                let display = sign.img ? `<img src="${sign.img}" class="real-img">` : `<span class="sign-img">${sign.icon}</span>`;
+                
+                container.innerHTML += `
+                    <div class="sign-item">
+                        ${display}
+                        <div style="font-weight:bold;">${sign.name}</div>
+                        <div style="font-size:0.8rem; color:#666;">${sign.desc}</div>
+                    </div>
+                `;
             });
         }
-        function endGame() {
-            clearInterval(timer);
-            document.getElementById('g-play').style.display='none'; document.getElementById('g-result').style.display='block';
-            document.getElementById('final-score').innerText=score+"/"+myQuiz.length;
-            gainXP(score*20); unlockAchievement('2','นักขับมือใหม่');
+
+        // ฟังก์ชันเริ่มเกม (Quiz)
+        let qIndex = 0;
+        let score = 0;
+        function loadQuiz() {
+            if(qIndex >= questions.length) {
+                document.getElementById('quiz-box').innerHTML = `
+                    <div style="text-align:center; padding:30px;">
+                        <h1>🎉 จบเกม!</h1>
+                        <h2>คะแนน: ${score} / ${questions.length}</h2>
+                        <button onclick="location.reload()" style="padding:10px 20px; margin-top:20px;">เล่นใหม่</button>
+                    </div>
+                `;
+                confetti();
+                return;
+            }
+
+            const item = questions[qIndex];
+            document.getElementById('q-text').innerText = item.q;
+            document.getElementById('q-image').innerHTML = item.img;
+            
+            const optBox = document.getElementById('q-options');
+            optBox.innerHTML = '';
+            item.options.forEach(opt => {
+                optBox.innerHTML += `<button class="quiz-option" onclick="checkAns('${opt}', '${item.ans}')">${opt}</button>`;
+            });
         }
 
-        // --- TIPS ---
-        const tips=["เมาไม่ขับ ปรับหนัก!","คาดเข็มขัดนิรภัยเสมอ","ห้ามโทรขณะขับ"];
-        function randomTip() { document.getElementById('tip-content').innerText=tips[Math.floor(Math.random()*tips.length)]; }
-        function manualRefreshTip() { playSFX('sfx-click'); randomTip(); }
+        function checkAns(selected, correct) {
+            if(selected === correct) {
+                score++;
+                alert("✅ ถูกต้อง!");
+            } else {
+                alert("❌ ผิด! คำตอบคือ " + correct);
+            }
+            qIndex++;
+            loadQuiz();
+        }
 
-        // INIT
-        renderSigns('all'); updateProfileUI();
+        // เริ่มต้นทำงาน
+        renderGallery();
+        loadQuiz();
+
     </script>
 </body>
 </html>
