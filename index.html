@@ -3,324 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Traffic Master Pro</title>
+    <title>Traffic Master Pro - AI Tutor</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* --- 1. THEME SETUP --- */
+        /* --- CSS เดิม (Glassmorphism สวยๆ) --- */
         :root {
-            --primary: #4f46e5;
-            --primary-light: #818cf8;
-            --bg-body: #f3f4f6;
-            --bg-card: rgba(255, 255, 255, 0.9);
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --glass-border: 1px solid rgba(255, 255, 255, 0.3);
-            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --primary: #4f46e5; --bg-body: #f8fafc; --bg-card: #ffffff;
+            --text-main: #1e293b; --glass-border: 1px solid rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-
-        /* โหมดมืด */
         body.dark-mode {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --bg-body: #0f172a;
-            --bg-card: rgba(30, 41, 59, 0.9);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --primary: #6366f1; --bg-body: #0f172a; --bg-card: #1e293b;
+            --text-main: #f1f5f9; --glass-border: 1px solid rgba(255,255,255,0.1);
         }
+        * { box-sizing: border-box; transition: 0.3s; }
+        body { font-family: 'Sarabun', sans-serif; margin: 0; background: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
 
-        * { box-sizing: border-box; transition: background 0.3s, color 0.3s; }
+        /* Sidebar & Layout */
+        .sidebar { width: 280px; background: var(--bg-card); border-right: var(--glass-border); padding: 20px; display: flex; flex-direction: column; z-index: 100; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .nav-btn { width: 100%; padding: 15px; margin-bottom: 8px; border-radius: 12px; border: none; background: transparent; color: var(--text-main); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 15px; font-weight: 600; }
+        .nav-btn:hover, .nav-btn.active { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
         
-        body {
-            font-family: 'Sarabun', sans-serif;
-            margin: 0;
-            background: var(--bg-body);
-            background-image: radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.1) 0%, transparent 20%),
-                              radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 20%);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
+        /* Cards */
+        .card { background: var(--bg-card); border-radius: 15px; padding: 25px; margin-bottom: 20px; border: var(--glass-border); box-shadow: var(--shadow); }
+        .page { display: none; animation: fadeIn 0.4s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- 2. SIDEBAR (เมนู) --- */
-        .sidebar {
-            width: 280px;
-            background: var(--bg-card);
-            backdrop-filter: blur(10px);
-            border-right: var(--glass-border);
-            padding: 25px;
-            display: flex; flex-direction: column;
-            z-index: 100;
-            box-shadow: var(--shadow);
-        }
-
-        .logo {
-            font-size: 1.5rem; font-weight: 800;
-            background: linear-gradient(to right, var(--primary), #ec4899);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 30px; display: flex; align-items: center; gap: 10px;
-        }
-
-        .nav-btn {
-            padding: 15px; margin-bottom: 8px;
-            border-radius: 15px; border: none; background: transparent;
-            color: var(--text-muted); font-family: inherit; font-weight: 600;
-            text-align: left; cursor: pointer; display: flex; align-items: center; gap: 15px;
-            transition: 0.2s;
-        }
-        .nav-btn:hover { background: rgba(79, 70, 229, 0.1); color: var(--primary); transform: translateX(5px); }
-        .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3); }
-
-        .theme-toggle {
-            margin-top: auto; padding: 15px; background: rgba(0,0,0,0.05);
-            border-radius: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-        }
-
-        /* --- 3. MAIN CONTENT --- */
-        .main-content {
-            flex: 1; padding: 30px; overflow-y: auto; scroll-behavior: smooth; position: relative;
-        }
-
-        /* การ์ดสไตล์กระจก (Glassmorphism) */
-        .glass-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            border: var(--glass-border);
-            box-shadow: var(--shadow);
-            animation: slideUp 0.5s ease-out;
-        }
-
-        /* Hero Header */
-        .hero-header {
-            background: linear-gradient(135deg, var(--primary), #ec4899);
-            color: white; padding: 40px; border-radius: 25px;
-            position: relative; overflow: hidden; margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
-        }
-        .hero-header::after {
-            content: ''; position: absolute; top: -50%; right: -20%;
-            width: 300px; height: 300px; background: rgba(255,255,255,0.2);
-            border-radius: 50%; filter: blur(50px);
-        }
-
-        /* --- 4. MOBILE RESPONSIVE --- */
-        .mobile-bar { display: none; }
+        /* Mobile */
+        .mobile-header { display: none; }
         .overlay { display: none; }
-
         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed; left: -100%; top: 0; height: 100%;
-                transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            }
+            .sidebar { position: fixed; left: -100%; top: 0; height: 100%; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.active { left: 0; }
-            
-            .mobile-bar {
-                display: flex; justify-content: space-between; align-items: center;
-                padding: 15px 20px; background: var(--bg-card);
-                border-bottom: var(--glass-border); position: fixed; top: 0; left: 0; right: 0;
-                z-index: 90; backdrop-filter: blur(10px);
-            }
-            .main-content { padding: 90px 20px 30px 20px; }
-            .overlay {
-                display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.5); z-index: 95; backdrop-filter: blur(3px);
-            }
+            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--bg-card); position: fixed; top: 0; width: 100%; z-index: 90; box-shadow: var(--shadow); }
+            .main-content { padding: 80px 20px 20px 20px; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 95; }
             .overlay.active { display: block; }
         }
 
-        /* --- 5. ELEMENTS --- */
-        /* Grid รูปภาพ */
+        /* [NEW] Elements for New Systems */
         .sign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-        .sign-item {
-            background: var(--bg-card); border: var(--glass-border);
-            border-radius: 15px; padding: 15px; text-align: center;
-            cursor: pointer; transition: 0.3s;
+        .sign-item { background: var(--bg-card); border: 1px solid #e2e8f0; border-radius: 15px; padding: 15px; text-align: center; cursor: pointer; position: relative; }
+        .sign-item:hover { border-color: var(--primary); transform: translateY(-3px); }
+        
+        /* ปุ่มลำโพง */
+        .speak-btn {
+            position: absolute; top: 5px; right: 5px;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(79, 70, 229, 0.1); color: var(--primary);
+            border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; transition: 0.2s;
         }
-        .sign-item:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .sign-img { width: 80px; height: 80px; object-fit: contain; margin: 0 auto 10px; display: block; font-size: 3rem; }
+        .speak-btn:hover { background: var(--primary); color: white; transform: scale(1.1); }
 
-        /* Quiz UI */
-        .quiz-option {
-            width: 100%; padding: 18px; margin-bottom: 12px;
-            background: var(--bg-card); border: 2px solid transparent;
-            border-radius: 15px; font-size: 1rem; color: var(--text-main);
-            cursor: pointer; transition: 0.2s; text-align: left;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        /* ผลสอบละเอียด */
+        .review-item { 
+            background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: left; border-left: 4px solid #cbd5e1;
         }
-        .quiz-option:hover { border-color: var(--primary); background: rgba(79, 70, 229, 0.05); }
-        .quiz-option.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #14532d; }
-        .quiz-option.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #7f1d1d; }
+        .review-item.wrong { border-left-color: #ef4444; background: #fef2f2; }
+        .review-item.correct { border-left-color: #22c55e; background: #f0fdf4; }
+        
+        .quiz-opt { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid transparent; background: #f1f5f9; border-radius: 10px; text-align: left; cursor: pointer; color: #334155; }
+        .quiz-opt:hover { background: #e2e8f0; }
+        .quiz-opt.correct { background: #dcfce7; border-color: #22c55e; }
+        .quiz-opt.wrong { background: #fee2e2; border-color: #ef4444; }
 
-        /* Lightbox (ดูรูปขยาย) */
-        .lightbox {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 2000;
-            justify-content: center; align-items: center; flex-direction: column;
-            backdrop-filter: blur(5px);
-        }
-        .lightbox img { max-width: 90%; max-height: 70vh; border-radius: 10px; box-shadow: 0 0 50px rgba(255,255,255,0.2); }
-        .lightbox.active { display: flex; animation: fadeIn 0.3s; }
-
-        /* Animations */
-        .page { display: none; }
-        .page.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
+        h2 { border-left: 5px solid var(--primary); padding-left: 15px; margin-bottom: 20px; }
+        ul { line-height: 1.8; padding-left: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="mobile-bar">
-        <div style="font-weight:800; color:var(--primary); font-size:1.2rem;">Traffic Pro</div>
-        <button onclick="toggleMenu()" style="background:none; border:none; font-size:1.5rem; color:var(--text-main);"><i class="fas fa-bars"></i></button>
+    <div class="mobile-header">
+        <div style="font-weight:800; color:var(--primary);">Traffic AI</div>
+        <button onclick="toggleMenu()" style="border:none; background:none; font-size:1.5rem;"><i class="fas fa-bars"></i></button>
     </div>
     <div class="overlay" onclick="toggleMenu()"></div>
 
     <aside class="sidebar">
-        <div class="logo"><i class="fas fa-layer-group"></i> Traffic Pro</div>
-        
-        <div class="glass-card" style="padding: 15px; margin-bottom: 20px; background: linear-gradient(135deg, var(--primary), #818cf8); color: white; border:none;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:40px; height:40px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:bold;">S</div>
-                <div>
-                    <div style="font-weight:bold;">Senior Driver</div>
-                    <div style="font-size:0.8rem; opacity:0.8;">Level 3 • 450 XP</div>
-                </div>
-            </div>
+        <div class="logo"><i class="fas fa-robot"></i> Traffic AI</div>
+        <div class="card" style="background: linear-gradient(135deg, var(--primary), #818cf8); color: white; padding: 15px;">
+            <div style="font-weight:bold;">สถานะ: ผู้เรียน</div>
+            <div style="font-size:0.9rem; opacity:0.9;">Level 1 • 0 XP</div>
         </div>
-
         <nav>
             <button class="nav-btn active" onclick="go('home', this)"><i class="fas fa-home"></i> หน้าแรก</button>
-            <button class="nav-btn" onclick="go('learn', this)"><i class="fas fa-book-open"></i> บทเรียน</button>
-            <button class="nav-btn" onclick="go('gallery', this)"><i class="fas fa-images"></i> คลังป้ายจราจร</button>
-            <button class="nav-btn" onclick="go('quiz', this)"><i class="fas fa-gamepad"></i> แบบทดสอบ</button>
+            <button class="nav-btn" onclick="go('lesson', this)"><i class="fas fa-book"></i> บทเรียน</button>
+            <button class="nav-btn" onclick="go('gallery', this)"><i class="fas fa-images"></i> คลังป้าย (AI Voice)</button>
+            <button class="nav-btn" onclick="go('quiz', this)"><i class="fas fa-gamepad"></i> สอบใบขับขี่</button>
         </nav>
-
-        <div class="theme-toggle" onclick="toggleTheme()">
-            <span style="font-size:0.9rem;">โหมดมืด/สว่าง</span>
-            <i id="theme-icon" class="fas fa-moon"></i>
-        </div>
     </aside>
 
     <main class="main-content">
         
         <div id="home" class="page active">
-            <div class="hero-header">
-                <h1 style="margin:0; font-size:2.5rem;">ยินดีต้อนรับ!</h1>
-                <p style="opacity:0.9; margin-top:10px;">พร้อมจะเป็นนักขับมืออาชีพหรือยัง?</p>
-                <button onclick="go('quiz', document.querySelectorAll('.nav-btn')[3])" style="margin-top:20px; padding:12px 30px; border:none; background:white; color:var(--primary); border-radius:50px; font-weight:bold; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.2);">เริ่มทำข้อสอบเลย 🚀</button>
+            <div class="card" style="background: linear-gradient(to right, #2563eb, #06b6d4); color: white; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h1>ระบบติวเตอร์อัจฉริยะ</h1>
+                    <p>เรียนรู้ด้วยเสียง (AI Voice) และระบบวิเคราะห์ผลสอบละเอียด</p>
+                    <button onclick="go('gallery', document.querySelectorAll('.nav-btn')[2])" style="margin-top:10px; padding:10px 25px; border:none; background:white; color:#2563eb; border-radius:50px; font-weight:bold; cursor:pointer;">ลองฟังเสียงป้าย</button>
+                </div>
+                <div style="font-size:4rem; opacity:0.8;">🎧</div>
             </div>
 
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px;">
-                <div class="glass-card" style="text-align:center;">
-                    <i class="fas fa-graduation-cap" style="font-size:3rem; color:#f59e0b; margin-bottom:15px;"></i>
-                    <h3>เรียนรู้ง่าย</h3>
-                    <p style="color:var(--text-muted);">เนื้อหาครบถ้วน เข้าใจง่าย พร้อมภาพประกอบ</p>
-                </div>
-                <div class="glass-card" style="text-align:center;">
-                    <i class="fas fa-trophy" style="font-size:3rem; color:#ef4444; margin-bottom:15px;"></i>
-                    <h3>ท้าทาย</h3>
-                    <p style="color:var(--text-muted);">ระบบเก็บเลเวลและเหรียญรางวัล</p>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+                <div class="card">
+                    <h3>📢 ฟีเจอร์ใหม่!</h3>
+                    <ul style="color: var(--text-muted);">
+                        <li><strong>กดฟังเสียง:</strong> ป้ายจราจรพูดได้! ช่วยให้จำง่ายขึ้น</li>
+                        <li><strong>วิเคราะห์ผล:</strong> บอกจุดอ่อน จุดแข็ง หลังสอบเสร็จ</li>
+                        <li><strong>Dark Mode:</strong> ถนอมสายตาตอนกลางคืน</li>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <div id="learn" class="page">
-            <h2 style="margin-bottom:20px;">📖 บทเรียนจราจร</h2>
-            <div class="glass-card">
-                <h3 style="color:var(--primary);">1. ความหมายของสีป้าย</h3>
-                <div style="display:flex; gap:15px; margin-top:15px; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:200px; background:rgba(239, 68, 68, 0.1); padding:15px; border-radius:10px; border-left:4px solid #ef4444;">
-                        <strong style="color:#ef4444;">สีแดง = บังคับ</strong><br>
-                        <span style="font-size:0.9rem;">ต้องทำตามทันที ห้ามฝ่าฝืน</span>
-                    </div>
-                    <div style="flex:1; min-width:200px; background:rgba(245, 158, 11, 0.1); padding:15px; border-radius:10px; border-left:4px solid #f59e0b;">
-                        <strong style="color:#f59e0b;">สีเหลือง = เตือน</strong><br>
-                        <span style="font-size:0.9rem;">ระวังอันตรายข้างหน้า</span>
-                    </div>
+        <div id="lesson" class="page">
+            <h2>📖 บทเรียน: กฎจราจรควรรู้</h2>
+            <div class="card">
+                <h3>1. ความหมายของเส้นบนถนน</h3>
+                <div style="display:flex; gap:15px; margin-bottom:15px;">
+                    <div style="font-size:2rem;">⬜</div>
+                    <div><strong>เส้นปะสีขาว</strong><br>สามารถเปลี่ยนเลนหรือแซงได้เมื่อปลอดภัย</div>
+                </div>
+                <div style="display:flex; gap:15px; margin-bottom:15px;">
+                    <div style="font-size:2rem;">➖</div>
+                    <div><strong>เส้นทึบสีขาว</strong><br><span style="color:red;">ห้าม</span>เปลี่ยนเลน ห้ามแซง ห้ามคร่อมเส้นเด็ดขาด</div>
+                </div>
+                <div style="display:flex; gap:15px;">
+                    <div style="font-size:2rem;">🟨</div>
+                    <div><strong>เส้นทึบสีเหลืองคู่</strong><br>ห้ามแซงทั้งสองฝั่ง (เขตอันตราย)</div>
                 </div>
             </div>
         </div>
 
         <div id="gallery" class="page">
-            <h2 style="margin-bottom:20px;">🛑 คลังป้ายจราจร</h2>
-            <div class="glass-card">
-                <p style="margin-bottom:20px;">คลิกที่รูปเพื่อดูภาพขยาย</p>
-                <div id="gallery-container" class="sign-grid"></div>
+            <h2>🔊 คลังป้ายจราจร (กดฟังเสียงได้)</h2>
+            <div class="card">
+                <p>คลิกที่ปุ่ม <i class="fas fa-volume-up" style="color:var(--primary)"></i> เพื่อฟังคำอธิบาย</p>
+                <div id="sign-container" class="sign-grid"></div>
             </div>
         </div>
 
         <div id="quiz" class="page">
-            <div id="quiz-ui" class="glass-card" style="text-align:center; max-width:600px; margin:0 auto;">
-                <div style="margin-bottom:20px;">
-                    <span style="background:var(--bg-body); padding:5px 15px; border-radius:20px; font-size:0.9rem;">ข้อที่ <span id="q-num">1</span> / 5</span>
+            <div id="quiz-ui" class="card" style="text-align:center; max-width:600px; margin:0 auto;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px; color:#64748b;">
+                    <span>ข้อที่ <span id="q-num">1</span>/10</span>
+                    <span>คะแนน: <span id="q-score">0</span></span>
                 </div>
-                <div id="q-img-display" style="margin-bottom:20px;"></div>
-                <h2 id="q-text" style="margin-bottom:30px;">คำถาม...</h2>
+                <div id="q-img" style="margin-bottom:20px; height:120px; display:flex; align-items:center; justify-content:center;"></div>
+                <h3 id="q-text" style="font-size:1.3rem; margin-bottom:30px;">คำถาม...</h3>
                 <div id="q-options"></div>
             </div>
-            
-            <div id="score-ui" class="glass-card" style="text-align:center; max-width:500px; margin:0 auto; display:none;">
-                <i class="fas fa-medal" style="font-size:5rem; color:#f59e0b; margin-bottom:20px;"></i>
-                <h1>จบการทดสอบ!</h1>
-                <h2 id="final-score" style="color:var(--primary);">4 / 5</h2>
-                <p>คุณทำได้ยอดเยี่ยมมาก!</p>
-                <button onclick="startQuiz()" style="margin-top:20px; padding:12px 30px; background:var(--primary); color:white; border:none; border-radius:50px; cursor:pointer;">ทำอีกครั้ง</button>
+
+            <div id="end-ui" class="card" style="text-align:center; display:none;">
+                <div style="font-size:5rem; margin-bottom:20px;">📊</div>
+                <h2>ผลการวิเคราะห์</h2>
+                <h1 style="color:var(--primary); font-size:3rem; margin:10px 0;"><span id="final-score">0</span>/10</h1>
+                
+                <div style="text-align:left; margin-top:30px;">
+                    <h4>📋 เฉลยละเอียด:</h4>
+                    <div id="review-container"></div>
+                </div>
+
+                <button onclick="startQuiz()" style="margin-top:20px; padding:12px 30px; background:var(--primary); color:white; border:none; border-radius:20px; cursor:pointer; width:100%;">สอบแก้มือ</button>
             </div>
         </div>
 
     </main>
 
-    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-        <img id="lightbox-img" src="">
-        <p style="color:white; margin-top:15px;">แตะที่ว่างเพื่อปิด</p>
-    </div>
-
     <script>
-        // --- 1. ข้อมูล (Data) ---
-        // วิธีใส่รูป: เปลี่ยน icon: '🛑' เป็น img: 'ชื่อไฟล์.jpg'
+        // --- DATA: ข้อมูลแน่นๆ ---
         const signs = [
-            { name: "หยุด", icon: "🛑", img: "S_6234114.jpg" }, // ตัวอย่างใส่รูปจริง
-            { name: "ห้ามเข้า", icon: "⛔" },
-            { name: "ให้ทาง", icon: "🔻" },
-            { name: "ทางโค้ง", icon: "↩️" },
-            { name: "ระวังรถไฟ", icon: "🚂" },
-            { name: "ห้ามจอด", icon: "🚳" },
-            { name: "จำกัดความเร็ว", icon: "5️⃣0️⃣" },
-            { name: "คนข้ามถนน", icon: "🚶" }
+            { n: "ป้ายหยุด", i: "🛑", d: "ป้ายหยุด รถทุกคันต้องหยุดให้สนิทหลังเส้นหยุด เมื่อปลอดภัยแล้วจึงเคลื่อนรถต่อไปได้" },
+            { n: "ห้ามเข้า", i: "⛔", d: "ป้ายห้ามเข้า ห้ามรถทุกชนิดผ่านเข้าไปในเขตทางที่ติดตั้งป้าย" },
+            { n: "ให้ทาง", i: "🔻", d: "ป้ายให้ทาง รถทางโทต้องชะลอความเร็ว หรือหยุดเพื่อให้รถในทางเอกผ่านไปก่อน" },
+            { n: "ห้ามแซง", i: "🚳", d: "เขตห้ามแซง ห้ามขับรถแซงคันอื่นในบริเวณนี้เด็ดขาด" },
+            { n: "ห้ามเลี้ยวซ้าย", i: "↰🚫", d: "ห้ามเลี้ยวซ้าย" },
+            { n: "ห้ามกลับรถ", i: "↩️🚫", d: "ห้ามกลับรถในบริเวณนี้" },
+            { n: "จำกัดความเร็ว", i: "5️⃣0️⃣", d: "จำกัดความเร็ว ห้ามใช้ความเร็วเกิน 50 กิโลเมตรต่อชั่วโมง" },
+            { n: "ห้ามจอด", i: "🅿️❌", d: "ห้ามจอดรถทุกชนิดในแนวเขตที่กำหนด" },
+            { n: "ทางโค้งซ้าย", i: "↩️", d: "ทางข้างหน้าเป็นทางโค้งไปทางซ้าย ควรชะลอความเร็ว" },
+            { n: "ทางโค้งขวา", i: "↪️", d: "ทางข้างหน้าเป็นทางโค้งไปทางขวา" },
+            { n: "ทางแยก", i: "➕", d: "ระวังทางแยกข้างหน้า" },
+            { n: "วงเวียน", i: "🔄", d: "วงเวียน ให้รถในวงเวียนทางขวามือไปก่อน" },
+            { n: "สัญญาณไฟ", i: "🚦", d: "ระวัง สัญญาณไฟจราจรข้างหน้า เตรียมพร้อมหยุดรถ" },
+            { n: "ระวังคนข้าม", i: "🚶", d: "เขตชุมชน ระวังคนข้ามถนน ชะลอความเร็ว" },
+            { n: "ระวังรถไฟ", i: "🚂", d: "ทางรถไฟผ่านข้างหน้า ไม่มีเครื่องกั้น" },
+            { n: "ถนนลื่น", i: "🌊", d: "ระวังถนนลื่น โดยเฉพาะเมื่อฝนตก" },
+            { n: "ทางแคบลง", i: "⏏️", d: "ผิวจราจรแคบลง ให้ระมัดระวังรถสวนทาง" },
+            { n: "ก่อสร้าง", i: "🚧", d: "ทางข้างหน้ามีการก่อสร้าง โปรดใช้ความระมัดระวัง" },
+            { n: "โรงพยาบาล", i: "🏥", d: "เขตโรงพยาบาล ห้ามใช้เสียงดังรบกวน" },
+            { n: "ที่จอดรถ", i: "🅿️", d: "ที่จอดรถ อนุญาตให้จอดรถได้" }
         ];
 
-        const questions = [
-            { q: "เมื่อพบป้ายนี้ต้องทำอย่างไร?", img: "S_6234114.jpg", icon:"🛑", opts: ["หยุดรถ", "เร่งความเร็ว", "บีบแตร", "เลี้ยวซ้าย"], ans: "หยุดรถ" },
-            { q: "ไฟเหลืองหมายถึง?", icon:"🟡", opts: ["ไปได้", "เตรียมหยุด", "จอดรถ", "ห้ามเลี้ยว"], ans: "เตรียมหยุด" },
-            { q: "ป้ายเตือนมีพื้นสีอะไร?", icon:"🎨", opts: ["แดง", "เหลือง", "เขียว", "น้ำเงิน"], ans: "เหลือง" }
+        const quizData = [
+            { q: "เมื่อเจอไฟเหลือง ต้องทำอย่างไร?", i: "🟡", o: ["เร่งความเร็ว", "เตรียมหยุดรถ", "จอดรถทันที", "เลี้ยวซ้ายผ่านตลอด"], a: "เตรียมหยุดรถ" },
+            { q: "ป้ายใดหมายถึง 'หยุด'?", i: "❓", o: ["ป้ายวงกลมแดง", "ป้ายสามเหลี่ยม", "ป้ายแปดเหลี่ยม", "ป้ายสี่เหลี่ยม"], a: "ป้ายแปดเหลี่ยม" },
+            { q: "เส้นทึบสีขาว หมายถึง?", i: "➖", o: ["แซงได้", "ห้ามแซงเด็ดขาด", "จอดรถได้", "ชะลอความเร็ว"], a: "ห้ามแซงเด็ดขาด" },
+            { q: "รถคันไหนมีสิทธิ์ไปก่อนในวงเวียน?", i: "🔄", o: ["รถที่จะเข้าวงเวียน", "รถที่อยู่ในวงเวียน (ทางขวา)", "รถทางซ้าย", "รถคันใหญ่กว่า"], a: "รถที่อยู่ในวงเวียน (ทางขวา)" },
+            { q: "ดื่มแอลกอฮอล์ได้ไม่เกินเท่าไหร่?", i: "🍺", o: ["20 mg%", "50 mg%", "80 mg%", "100 mg%"], a: "50 mg%" },
+            { q: "เมื่อเห็นคนข้ามทางม้าลาย?", i: "🚶", o: ["บีบแตรไล่", "ขับอ้อมไป", "หยุดให้คนข้ามเสมอ", "เร่งเครื่องผ่านไป"], a: "หยุดให้คนข้ามเสมอ" },
+            { q: "ป้ายพื้นสีส้ม หมายถึง?", i: "🟧", o: ["ป้ายบังคับ", "ป้ายเตือน", "ป้ายก่อสร้าง", "ป้ายแนะนำ"], a: "ป้ายก่อสร้าง" },
+            { q: "ก่อนเลี้ยวรถ ต้องเปิดไฟเลี้ยวล่วงหน้ากี่เมตร?", i: "💡", o: ["10 เมตร", "30 เมตร", "60 เมตร", "ไม่จำเป็นต้องเปิด"], a: "30 เมตร" },
+            { q: "ห้ามจอดรถบริเวณใด?", i: "🅿️❌", o: ["ลานจอดรถ", "หน้าบ้านตัวเอง", "ทางร่วมทางแยก", "ไหล่ทาง"], a: "ทางร่วมทางแยก" },
+            { q: "ป้ายให้ทาง มีลักษณะอย่างไร?", i: "🔻", o: ["สามเหลี่ยมหัวกลับ", "วงกลมแดง", "สี่เหลี่ยมเหลือง", "วงกลมน้ำเงิน"], a: "สามเหลี่ยมหัวกลับ" }
         ];
 
-        // --- 2. ระบบนำทาง (Navigation) ---
+        // --- SYSTEM CORE ---
         function go(pageId, btn) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
-            
-            // เปลี่ยนปุ่ม Active
-            if(btn) {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
-
-            // ปิดเมนูมือถือ
-            document.querySelector('.sidebar').classList.remove('active');
+            if(btn) btn.classList.add('active');
+            document.querySelector('.sidebar').classList.remove('active'); 
             document.querySelector('.overlay').classList.remove('active');
-
-            if(pageId === 'gallery') renderGallery();
+            
+            if(pageId === 'gallery') loadGallery();
             if(pageId === 'quiz') startQuiz();
         }
 
@@ -329,110 +234,119 @@
             document.querySelector('.overlay').classList.toggle('active');
         }
 
-        // --- 3. ระบบธีม (Theme) ---
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            document.getElementById('theme-icon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        // --- 🔊 SYSTEM 1: AI VOICE (พูดได้) ---
+        function speak(text) {
+            window.speechSynthesis.cancel(); // หยุดเสียงเก่าก่อน
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH'; // ตั้งค่าเป็นภาษาไทย
+            utterance.rate = 1; // ความเร็วปกติ
+            window.speechSynthesis.speak(utterance);
         }
 
-        // --- 4. ระบบคลังภาพ (Gallery) ---
-        function renderGallery() {
-            const container = document.getElementById('gallery-container');
-            container.innerHTML = '';
+        function loadGallery() {
+            const c = document.getElementById('sign-container');
+            if(c.innerHTML !== '') return; 
             signs.forEach(s => {
-                // ถ้ามี img ให้ใช้ img ถ้าไม่มีให้ใช้ icon
-                let display = s.img ? `<img src="${s.img}" class="sign-img">` : `<div class="sign-img">${s.icon}</div>`;
-                
-                // สร้างการ์ด
-                let item = document.createElement('div');
-                item.className = 'sign-item';
-                item.innerHTML = `${display} <div style="font-weight:bold;">${s.name}</div>`;
-                item.onclick = () => openLightbox(s.img, s.icon);
-                container.appendChild(item);
+                // ปุ่มกดฟังเสียง
+                c.innerHTML += `
+                    <div class="sign-item" onclick="speak('${s.d}')">
+                        <button class="speak-btn"><i class="fas fa-volume-up"></i></button>
+                        <div style="font-size:3rem; margin-bottom:10px;">${s.i}</div>
+                        <div style="font-weight:bold;">${s.n}</div>
+                    </div>
+                `;
             });
         }
 
-        function openLightbox(imgSrc, icon) {
-            const lb = document.getElementById('lightbox');
-            const lbImg = document.getElementById('lightbox-img');
-            
-            // ถ้ามีรูปจริงค่อยเปิด Lightbox
-            if(imgSrc) {
-                lbImg.src = imgSrc;
-                lb.classList.add('active');
-            } else {
-                alert("ป้ายนี้: " + icon); // ถ้าเป็นไอคอนให้แจ้งเตือนธรรมดา
-            }
-        }
-        function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
-
-        // --- 5. ระบบแบบทดสอบ (Quiz) ---
-        let currentQ = 0;
-        let score = 0;
+        // --- 📊 SYSTEM 2: SMART REPORT (วิเคราะห์ผล) ---
+        let qIdx = 0, score = 0;
+        let userAnswers = []; // เก็บประวัติการตอบ
 
         function startQuiz() {
-            currentQ = 0; score = 0;
+            qIdx = 0; score = 0; userAnswers = [];
             document.getElementById('quiz-ui').style.display = 'block';
-            document.getElementById('score-ui').style.display = 'none';
+            document.getElementById('end-ui').style.display = 'none';
+            document.getElementById('q-score').innerText = 0;
             showQuestion();
         }
 
         function showQuestion() {
-            if(currentQ >= questions.length) { endQuiz(); return; }
-
-            const q = questions[currentQ];
-            document.getElementById('q-num').innerText = currentQ + 1;
+            if(qIdx >= quizData.length) { showResult(); return; }
+            
+            const q = quizData[qIdx];
+            document.getElementById('q-num').innerText = qIdx + 1;
             document.getElementById('q-text').innerText = q.q;
+            document.getElementById('q-img').innerHTML = `<div style="font-size:4rem;">${q.i}</div>`;
             
-            // แสดงรูปโจทย์
-            let display = q.img ? `<img src="${q.img}" style="max-height:150px; border-radius:10px;">` : `<div style="font-size:4rem;">${q.icon || '❓'}</div>`;
-            document.getElementById('q-img-display').innerHTML = display;
-
-            const optsDiv = document.getElementById('q-options');
-            optsDiv.innerHTML = '';
+            const opts = document.getElementById('q-options');
+            opts.innerHTML = '';
             
-            q.opts.forEach(opt => {
+            let shuffled = [...q.o].sort(() => 0.5 - Math.random());
+            shuffled.forEach(opt => {
                 let btn = document.createElement('button');
-                btn.className = 'quiz-option';
+                btn.className = 'quiz-opt';
                 btn.innerText = opt;
-                btn.onclick = () => checkAnswer(btn, opt, q.ans);
-                optsDiv.appendChild(btn);
+                btn.onclick = () => checkAns(btn, opt, q.a, q.q);
+                opts.appendChild(btn);
             });
         }
 
-        function checkAnswer(btn, selected, correct) {
-            // ล็อคปุ่ม
-            document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+        function checkAns(btn, ans, correct, questionText) {
+            document.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+            let isCorrect = (ans === correct);
+            
+            // บันทึกผลการตอบ (เพื่อเอาไปทำรายงานตอนท้าย)
+            userAnswers.push({
+                question: questionText,
+                userSelect: ans,
+                correctSelect: correct,
+                isCorrect: isCorrect
+            });
 
-            if(selected === correct) {
+            if(isCorrect) {
                 btn.classList.add('correct');
                 score++;
-                confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                document.getElementById('q-score').innerText = score;
+                confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
             } else {
                 btn.classList.add('wrong');
-                // เฉลยปุ่มที่ถูก
-                document.querySelectorAll('.quiz-option').forEach(b => {
+                document.querySelectorAll('.quiz-opt').forEach(b => {
                     if(b.innerText === correct) b.classList.add('correct');
                 });
             }
 
             setTimeout(() => {
-                currentQ++;
+                qIdx++;
                 showQuestion();
             }, 1500);
         }
 
-        function endQuiz() {
+        function showResult() {
             document.getElementById('quiz-ui').style.display = 'none';
-            document.getElementById('score-ui').style.display = 'block';
-            document.getElementById('final-score').innerText = score + " / " + questions.length;
-            if(score === questions.length) confetti();
+            document.getElementById('end-ui').style.display = 'block';
+            document.getElementById('final-score').innerText = score;
+            
+            // สร้างรายงานผล (Smart Report)
+            const reviewContainer = document.getElementById('review-container');
+            reviewContainer.innerHTML = '';
+            
+            userAnswers.forEach((item, index) => {
+                let statusClass = item.isCorrect ? 'correct' : 'wrong';
+                let icon = item.isCorrect ? '✅' : '❌';
+                
+                reviewContainer.innerHTML += `
+                    <div class="review-item ${statusClass}">
+                        <strong>ข้อที่ ${index + 1}: ${item.question}</strong><br>
+                        <span style="font-size:0.9rem;">
+                            ${icon} คุณตอบ: ${item.userSelect} <br>
+                            👉 เฉลย: <strong>${item.correctSelect}</strong>
+                        </span>
+                    </div>
+                `;
+            });
+
+            if(score === 10) confetti();
         }
-
-        // เริ่มต้น Render
-        renderGallery();
-
     </script>
 </body>
 </html>
