@@ -29,51 +29,16 @@
             color: var(--text-main); line-height: 1.6; transition: 0.3s;
         }
 
-        /* --- [NEW] MOBILE RESPONSIVE CSS --- */
-        /* ปุ่มเมนู (ซ่อนใน PC โชว์ในมือถือ) */
-        .mobile-toggle {
-            display: none; position: fixed; top: 15px; left: 15px; z-index: 100;
-            background: var(--primary); color: white; border: none;
-            width: 45px; height: 45px; border-radius: 12px; font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;
-        }
-        
-        /* Overlay ฉากหลังเวลาเปิดเมนู */
-        .menu-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(3px);
-        }
-
-        /* กฎสำหรับหน้าจอมือถือ (ความกว้างน้อยกว่า 768px) */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed; left: -100%; top: 0; height: 100%; width: 80%; max-width: 300px;
-                transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 5px 0 25px rgba(0,0,0,0.2);
-            }
-            .sidebar.active { left: 0; } /* สั่งให้เลื่อนออกมา */
-            .main-content { width: 100%; padding: 80px 20px 40px 20px; } /* เพิ่ม Padding บนหลบปุ่ม */
-            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
-            .menu-overlay.active { display: block; }
-            
-            /* ปรับขนาดตัวอักษรในมือถือ */
-            .hero-card { flex-direction: column; text-align: center; padding: 25px; }
-            .hero-card div:last-child { margin-top: 20px; font-size: 4rem; }
-            .typing-text { font-size: 1.5rem; white-space: normal; animation: none; border: none; }
-            h1 { font-size: 1.8rem; }
-            
-            /* ซ่อน Animation ลอยๆ เพื่อไม่ให้รกจอ */
-            .bg-animation { display: none; }
-        }
-
-        /* --- SIDEBAR --- */
+        /* --- SIDEBAR (PC Style) --- */
         .sidebar {
             width: var(--sidebar-width); background: var(--sidebar-bg); border-right: 1px solid var(--border-color);
             display: flex; flex-direction: column; padding: 25px; flex-shrink: 0;
             position: relative; z-index: 50; overflow-y: auto;
+            transition: transform 0.3s ease; /* เพิ่ม Effect เลื่อน */
         }
         .logo { font-size: 1.5rem; font-weight: 900; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         
-        /* Profile & Nav Styles (เหมือนเดิม) */
+        /* Profile & Nav */
         .profile-section { background: var(--secondary); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--border-color); }
         .profile-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .profile-avatar { width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
@@ -114,16 +79,16 @@
         .game-area { background: var(--bg-card); border-radius: 25px; padding: 30px; text-align: center; border: 1px solid var(--border-color); }
         .timer-bar { background: var(--border-color); height: 10px; border-radius: 5px; overflow: hidden; margin: 20px 0; }
         .timer-fill { background: var(--danger); height: 100%; width: 100%; transition: width 1s linear; }
-        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 25px; } /* ปรับเป็น 1 แถวในมือถือ */
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 25px; } 
         @media(min-width: 768px) { .options-grid { grid-template-columns: 1fr 1fr; } }
         .opt-btn { padding: 15px; border: 2px solid var(--border-color); background: var(--bg-card); color: var(--text-main); border-radius: 12px; font-size: 1rem; cursor: pointer; }
-        .sign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; } /* ปรับขนาดกริด */
+        .sign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; } 
         .sign-card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 15px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
         .sign-icon { background: var(--secondary); padding: 10px; border-radius: 10px; display:flex; align-items:center; justify-content:center; width: 60px; height:60px; }
         .sign-icon img { width: 100%; height: 100%; object-fit: contain; }
         .badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; color:white; }
         .bg-red { background: var(--danger); } .bg-yellow { background: var(--accent); } .bg-blue { background: var(--primary); }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; } /* เลื่อนแนวนอนได้ */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-muted); cursor: pointer; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
@@ -133,6 +98,39 @@
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} } @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
         #welcome-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: white; text-align: center; }
+
+        /* --- [CORRECTED] MOBILE RESPONSIVE CSS (ย้ายมาไว้ล่างสุด) --- */
+        .mobile-toggle {
+            display: none; position: fixed; top: 15px; left: 15px; z-index: 100;
+            background: var(--primary); color: white; border: none;
+            width: 45px; height: 45px; border-radius: 12px; font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;
+        }
+        .menu-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(3px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -100%; top: 0; height: 100%; width: 80%; max-width: 300px;
+                box-shadow: 5px 0 25px rgba(0,0,0,0.2);
+                /* ใช้ !important เพื่อบังคับให้เชื่อโค้ดนี้ */
+                z-index: 999 !important; 
+            }
+            .sidebar.active { left: 0 !important; } 
+            
+            .main-content { width: 100%; padding: 80px 20px 40px 20px; } 
+            
+            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+            .menu-overlay.active { display: block; }
+            
+            .hero-card { flex-direction: column; text-align: center; padding: 25px; }
+            .hero-card div:last-child { margin-top: 20px; font-size: 4rem; }
+            .typing-text { font-size: 1.5rem; white-space: normal; animation: none; border: none; }
+            h1 { font-size: 1.8rem; }
+            .bg-animation { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -153,6 +151,11 @@
     <div class="menu-overlay" onclick="toggleSidebar()"></div>
 
     <div id="toast"><i class="fas fa-trophy" style="color: #fbbf24;"></i> <span id="toast-msg"></span></div>
+    
+    <div class="bg-animation">
+        <div class="floating-item item-1">🛑</div> <div class="floating-item item-2">🚦</div>
+        <div class="floating-item item-3">🚗</div> <div class="floating-item item-4">🚧</div>
+    </div>
 
     <aside class="sidebar">
         <div class="logo"><i class="fas fa-traffic-light"></i> Traffic Master</div>
@@ -364,11 +367,22 @@
         }
         function filterSigns(t) { renderSigns(t); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.target.classList.add('active'); }
 
-        // --- QUIZ ---
+        // --- [ใส่ข้อสอบของคุณตรงนี้ได้เลยครับ] ---
         const myQuiz = [
-            { q:"ป้ายหยุดต้องทำอย่างไร?", img:'<img src="หยุดด.png" style="width:100px;">', o:["ชะลอ","หยุดสนิท","บีบแตร","เลี้ยว"], a:"หยุดสนิท" },
+            {
+                question: "เมื่อพบเครื่องหมายนี้ ผู้ขับขี่ต้องปฏิบัติอย่างไร?",
+                image: '<img src="S_6234114.jpg" style="width:120px;">', // ใส่ชื่อไฟล์รูปของคุณ
+                options: [
+                    "รถมีคนนั่ง 2 คน เข้าไปในช่องเดินรถนี้ได้",
+                    "รถมีคนนั่งไม่น้อยกว่า 3 คน สามารถใช้ช่องเดินรถนี้ได้", // คำตอบที่ถูก
+                    "รถมีคนนั่ง 1 คน เข้าไปในช่องเดินรถนี้ได้",
+                    "ห้ามรถมีคนเกิน 3 คน เข้าไปในช่องเดินรถนี้"
+                ],
+                correctAnswer: "รถมีคนนั่งไม่น้อยกว่า 3 คน สามารถใช้ช่องเดินรถนี้ได้"
+            },
             { q:"ไฟเหลืองหมายถึง?", img:'<div style="font-size:4rem;">🟡</div>', o:["เร่งความเร็ว","เตรียมหยุด","จอดรถ","เลี้ยวได้"], a:"เตรียมหยุด" }
         ];
+        
         let score=0, qIndex=0, timer, timeLeft=30;
         function startGame() {
             playSFX('sfx-click'); score=0; qIndex=0;
@@ -377,7 +391,7 @@
             nextQuestion();
         }
         function nextQuestion() {
-            if(qIndex>=myQuiz.length) { endGame(); return; } // แก้ให้จบตามจำนวนข้อที่มี
+            if(qIndex>=myQuiz.length) { endGame(); return; }
             timeLeft=30; clearInterval(timer);
             timer=setInterval(()=>{
                 timeLeft--; document.getElementById('timer-text').innerText=timeLeft+'s';
@@ -387,14 +401,18 @@
             
             let item = myQuiz[qIndex];
             document.getElementById('q-counter').innerText=`ข้อที่ ${qIndex+1}`;
-            document.getElementById('q-question').innerText=item.q;
-            document.getElementById('q-icon').innerHTML=item.img||'';
+            document.getElementById('q-question').innerText=item.question || item.q;
+            document.getElementById('q-icon').innerHTML=item.image || item.img || '';
             const c=document.getElementById('q-options'); c.innerHTML='';
-            let opts=[...item.o].sort(()=>0.5-Math.random());
+            
+            // สุ่มช้อยส์
+            let opts=[...(item.options || item.o)].sort(()=>0.5-Math.random());
+            let ans = item.correctAnswer || item.a;
+
             opts.forEach(opt=>{
                 let b=document.createElement('button'); b.className='opt-btn'; b.innerText=opt;
                 b.onclick=()=>{ 
-                    if(opt===item.a){ score++; playSFX('sfx-correct'); } else playSFX('sfx-wrong');
+                    if(opt===ans){ score++; playSFX('sfx-correct'); } else playSFX('sfx-wrong');
                     qIndex++; nextQuestion();
                 };
                 c.appendChild(b);
